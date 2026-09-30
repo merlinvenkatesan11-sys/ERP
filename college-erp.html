@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>College ERP System</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    /* ===== RESET ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    /* ===== BASE ===== */
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      color: #1a1d23;
+    }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeUp   { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeIn   { from { opacity:0; } to { opacity:1; } }
+    @keyframes slideRight { from { opacity:0; transform:translateX(-16px); } to { opacity:1; transform:translateX(0); } }
+    @keyframes pulse    { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
+    @keyframes spin     { to { transform:rotate(360deg); } }
+    @keyframes ripple   { 0%{transform:scale(0);opacity:0.6} 100%{transform:scale(4);opacity:0} }
+
+    /* ===================================
+       LOGIN PAGE
+    =================================== */
+    .login-page {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      animation: fadeIn 0.5s ease;
+    }
+    @media(max-width:768px){ .login-page{grid-template-columns:1fr;} .login-panel{display:none!important;} }
+
+    .login-panel {
+      background: linear-gradient(160deg, #0f172a 0%, #1e3a5f 50%, #0f4c81 100%);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 60px 40px;
+      position: relative; overflow: hidden;
+    }
+    .login-panel::before {
+      content:'';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 70% 30%, rgba(59,130,246,0.25) 0%, transparent 60%),
+                  radial-gradient(circle at 20% 80%, rgba(16,185,129,0.2) 0%, transparent 50%);
+    }
+    .login-panel-content { position:relative; z-index:1; text-align:center; }
+    .panel-logo {
+      width: 80px; height: 80px;
+      background: linear-gradient(135deg, #3b82f6, #10b981);
+      border-radius: 24px;
+      display: inline-flex; align-items:center; justify-content:center;
+      font-size: 36px; margin-bottom: 28px;
+      box-shadow: 0 20px 60px rgba(59,130,246,0.4);
+      animation: pulse 4s ease-in-out infinite;
+    }
+    .panel-title { font-size: 34px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+    .panel-sub   { color: rgba(255,255,255,0.6); font-size: 15px; margin-top: 8px; line-height: 1.6; }
+    .panel-features { margin-top: 48px; display:flex; flex-direction:column; gap:16px; text-align:left; }
+    .panel-feat {
+      display:flex; align-items:center; gap:12px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px; padding: 14px 16px;
+      color: rgba(255,255,255,0.85); font-size: 14px;
+    }
+    .panel-feat-icon {
+      width:36px; height:36px;
+      background: rgba(59,130,246,0.25);
+      border-radius: 10px;
+      display:flex; align-items:center; justify-content:center; font-size:18px;
+      flex-shrink:0;
+    }
+
+    /* LOGIN FORM SIDE */
+    .login-form-side {
+      background: #fff;
+      display: flex; align-items: center; justify-content: center;
+      padding: 40px 32px;
+    }
+    .login-form-box { width:100%; max-width: 420px; }
+    .lf-heading { font-size:26px; font-weight:800; color:#0f172a; margin-bottom:6px; }
+    .lf-sub     { font-size:14px; color:#64748b; margin-bottom:32px; }
+
+    .role-selector { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:24px; }
+    .role-opt {
+      padding: 12px 8px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #f8fafc;
+    }
+    .role-opt:hover { border-color: #3b82f6; background: #eff6ff; }
+    .role-opt.selected { border-color: #3b82f6; background: #eff6ff; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+    .role-opt-icon { font-size: 22px; display:block; margin-bottom:4px; }
+    .role-opt-label { font-size: 12px; font-weight: 700; color: #475569; }
+    .role-opt.selected .role-opt-label { color: #3b82f6; }
+
+    .lf-label {
+      display:block; font-size:12px; font-weight:700;
+      color:#374151; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px;
+    }
+    .lf-input {
+      width:100%; padding:13px 16px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 14px; color: #0f172a; outline:none;
+      background: #f8fafc;
+      transition: all 0.2s ease;
+      margin-bottom: 18px;
+    }
+    .lf-input:focus { border-color:#3b82f6; background:#fff; box-shadow:0 0 0 3px rgba(59,130,246,0.1); }
+
+    .lf-btn {
+      width:100%; padding:14px;
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color:#fff; border:none; border-radius:10px;
+      font-size:15px; font-weight:700; cursor:pointer;
+      transition: all 0.25s ease;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      box-shadow: 0 4px 14px rgba(59,130,246,0.35);
+    }
+    .lf-btn:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(59,130,246,0.4); }
+    .lf-btn:active { transform:translateY(0); }
+
+    .lf-err {
+      background:#fef2f2; border:1px solid #fecaca;
+      color:#dc2626; padding:11px 14px; border-radius:8px;
+      font-size:13px; margin-bottom:16px; display:flex; align-items:center; gap:8px;
+    }
+
+    .quick-creds { margin-top:28px; }
+    .qc-title { font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
+    .qc-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .qc-card {
+      border:1.5px solid #e2e8f0; border-radius:10px; padding:10px;
+      cursor:pointer; transition:all 0.2s ease; text-align:center;
+      background:#f8fafc;
+    }
+    .qc-card:hover { transform:translateY(-2px); border-color:#3b82f6; background:#eff6ff; }
+    .qc-role { font-size:11px; font-weight:700; margin-bottom:3px; }
+    .qc-creds { font-size:10px; color:#94a3b8; }
+
+    .spinner {
+      width:18px; height:18px;
+      border:3px solid rgba(255,255,255,0.3);
+      border-top-color:#fff;
+      border-radius:50%;
+      animation:spin 0.65s linear infinite;
+      display:inline-block;
+    }
+
+    /* ===================================
+       PORTAL SHELL (Sidebar Layout)
+    =================================== */
+    .portal-shell {
+      display: flex;
+      min-height: 100vh;
+      animation: fadeIn 0.4s ease;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 260px;
+      flex-shrink: 0;
+      background: #0f172a;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top:0; left:0; bottom:0;
+      z-index: 200;
+      transition: transform 0.3s ease;
+    }
+    .sidebar-brand {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      display:flex; align-items:center; gap:12px;
+    }
+    .sidebar-brand-icon {
+      width:42px; height:42px;
+      background: linear-gradient(135deg, #3b82f6, #10b981);
+      border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:20px; flex-shrink:0;
+    }
+    .sidebar-brand-text .sb-title { font-size:16px; font-weight:800; color:#fff; }
+    .sidebar-brand-text .sb-sub   { font-size:11px; color:#64748b; margin-top:1px; }
+
+    .sidebar-user {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      display:flex; align-items:center; gap:12px;
+    }
+    .user-ava {
+      width:38px; height:38px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:14px; font-weight:800; flex-shrink:0; color:#fff;
+    }
+    .user-ava.ava-admin   { background:linear-gradient(135deg,#f43f5e,#e11d48); }
+    .user-ava.ava-staff   { background:linear-gradient(135deg,#10b981,#059669); }
+    .user-ava.ava-student { background:linear-gradient(135deg,#3b82f6,#1d4ed8); }
+    .user-info .ui-name { font-size:13px; font-weight:700; color:#f1f5f9; }
+    .user-info .ui-role { font-size:11px; color:#64748b; margin-top:1px; }
+
+    .sidebar-nav { flex:1; padding:16px 12px; overflow-y:auto; }
+    .nav-section-label {
+      font-size:10px; font-weight:700; color:#475569;
+      text-transform:uppercase; letter-spacing:1px;
+      padding: 0 10px; margin-bottom:8px; margin-top:8px;
+    }
+    .nav-item {
+      display:flex; align-items:center; gap:10px;
+      padding: 11px 12px;
+      border-radius: 10px;
+      cursor:pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 3px;
+      color: #94a3b8;
+      font-size: 14px; font-weight: 600;
+      border: none; background: transparent; width:100%; text-align:left;
+    }
+    .nav-item:hover  { background:rgba(255,255,255,0.06); color:#e2e8f0; }
+    .nav-item.active { background:linear-gradient(135deg,rgba(59,130,246,0.25),rgba(29,78,216,0.15)); color:#60a5fa; }
+    .nav-item.active .nav-icon-wrap { background:rgba(59,130,246,0.3); }
+    .nav-icon-wrap {
+      width:32px; height:32px; border-radius:8px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:16px; flex-shrink:0;
+      background: rgba(255,255,255,0.05);
+      transition: background 0.2s;
+    }
+    .nav-badge {
+      margin-left:auto; background:#3b82f6; color:#fff;
+      font-size:10px; font-weight:700;
+      padding:2px 7px; border-radius:20px;
+    }
+
+    .sidebar-footer {
+      padding: 16px 12px;
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+    .logout-nav {
+      display:flex; align-items:center; gap:10px;
+      padding: 11px 12px; border-radius:10px;
+      cursor:pointer; transition:all 0.2s ease;
+      color:#f87171; font-size:14px; font-weight:600;
+      background:transparent; border:none; width:100%; text-align:left;
+    }
+    .logout-nav:hover { background:rgba(248,113,113,0.1); }
+    .logout-nav .nav-icon-wrap { background:rgba(248,113,113,0.1); }
+
+    /* MAIN CONTENT */
+    .main-content {
+      margin-left: 260px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* TOPBAR */
+    .topbar {
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 0 28px;
+      height: 64px;
+      display: flex; align-items:center; justify-content:space-between;
+      position: sticky; top:0; z-index:100;
+    }
+    .topbar-left h1 { font-size:20px; font-weight:800; color:#0f172a; }
+    .topbar-left p  { font-size:13px; color:#94a3b8; margin-top:1px; }
+    .topbar-right { display:flex; align-items:center; gap:12px; }
+    .tb-date {
+      display:flex; align-items:center; gap:6px;
+      padding: 7px 14px;
+      background: #f1f5f9;
+      border-radius:8px;
+      font-size:13px; font-weight:600; color:#475569;
+    }
+    .tb-notif {
+      width:38px; height:38px; border-radius:8px;
+      background:#f1f5f9; border:none; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      font-size:18px; position:relative;
+      transition:background 0.2s;
+    }
+    .tb-notif:hover { background:#e2e8f0; }
+    .tb-notif-dot {
+      width:8px; height:8px; border-radius:50%; background:#ef4444;
+      position:absolute; top:6px; right:6px; border:2px solid #fff;
+    }
+
+    /* PAGE CONTENT */
+    .page-content { padding:28px; flex:1; }
+
+    /* ===================================
+       STATS CARDS
+    =================================== */
+    .stats-row {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+      gap:20px;
+      margin-bottom:28px;
+    }
+    .scard {
+      background:#fff;
+      border-radius:16px;
+      padding:22px 20px;
+      border:1px solid #f1f5f9;
+      box-shadow:0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04);
+      display:flex; flex-direction:column; gap:16px;
+      transition:all 0.25s ease;
+      animation: fadeUp 0.4s ease;
+      position:relative; overflow:hidden;
+    }
+    .scard:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,0.1); }
+    .scard::before {
+      content:'';
+      position:absolute; top:0; left:0; right:0; height:3px;
+      border-radius:16px 16px 0 0;
+    }
+    .scard.blue::before   { background:linear-gradient(90deg,#3b82f6,#60a5fa); }
+    .scard.green::before  { background:linear-gradient(90deg,#10b981,#34d399); }
+    .scard.orange::before { background:linear-gradient(90deg,#f59e0b,#fbbf24); }
+    .scard.rose::before   { background:linear-gradient(90deg,#f43f5e,#fb7185); }
+    .scard.purple::before { background:linear-gradient(90deg,#8b5cf6,#a78bfa); }
+    .scard.teal::before   { background:linear-gradient(90deg,#14b8a6,#2dd4bf); }
+
+    .scard-top { display:flex; align-items:flex-start; justify-content:space-between; }
+    .scard-icon {
+      width:46px; height:46px; border-radius:12px;
+      display:flex; align-items:center; justify-content:center; font-size:22px;
+    }
+    .scard.blue   .scard-icon { background:#eff6ff; }
+    .scard.green  .scard-icon { background:#ecfdf5; }
+    .scard.orange .scard-icon { background:#fffbeb; }
+    .scard.rose   .scard-icon { background:#fff1f2; }
+    .scard.purple .scard-icon { background:#f5f3ff; }
+    .scard.teal   .scard-icon { background:#f0fdfa; }
+    .scard-trend { font-size:12px; font-weight:700; padding:3px 8px; border-radius:20px; }
+    .trend-up   { background:#ecfdf5; color:#059669; }
+    .trend-down { background:#fff1f2; color:#e11d48; }
+    .trend-flat { background:#f1f5f9; color:#64748b; }
+    .scard-value { font-size:30px; font-weight:800; color:#0f172a; line-height:1; }
+    .scard-label { font-size:13px; color:#94a3b8; font-weight:500; margin-top:3px; }
+
+    /* ===================================
+       CONTENT CARDS
+    =================================== */
+    .ccard {
+      background:#fff;
+      border-radius:16px;
+      border:1px solid #f1f5f9;
+      box-shadow:0 1px 3px rgba(0,0,0,0.04);
+      overflow:hidden;
+      margin-bottom:24px;
+      animation:fadeUp 0.4s ease;
+    }
+    .ccard-head {
+      padding:18px 24px;
+      border-bottom:1px solid #f1f5f9;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .ccard-head-left { display:flex; align-items:center; gap:10px; }
+    .ccard-head-icon {
+      width:36px; height:36px; border-radius:10px;
+      display:flex; align-items:center; justify-content:center; font-size:18px;
+    }
+    .ccard-title { font-size:16px; font-weight:700; color:#0f172a; }
+    .ccard-sub   { font-size:12px; color:#94a3b8; margin-top:1px; }
+    .ccard-body  { padding:24px; }
+
+    /* ===================================
+       TABLES
+    =================================== */
+    .tw { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; }
+    thead th {
+      background:#f8fafc; padding:11px 16px;
+      text-align:left; font-size:11px; font-weight:700;
+      color:#64748b; text-transform:uppercase; letter-spacing:0.8px;
+      border-bottom:1px solid #e2e8f0; white-space:nowrap;
+    }
+    thead th:first-child { border-radius:0; }
+    tbody tr { border-bottom:1px solid #f1f5f9; transition:background 0.15s; }
+    tbody tr:hover { background:#f8fafc; }
+    tbody tr:last-child { border-bottom:none; }
+    tbody td { padding:13px 16px; font-size:14px; color:#374151; vertical-align:middle; }
+    .td-code { font-family:monospace; font-size:12px; color:#94a3b8; font-weight:600; }
+    .td-name { font-weight:600; color:#0f172a; }
+    .td-sub  { font-size:11px; color:#94a3b8; margin-top:2px; }
+
+    /* ===================================
+       BADGES
+    =================================== */
+    .pill {
+      display:inline-flex; align-items:center; gap:5px;
+      padding:3px 10px; border-radius:20px;
+      font-size:11px; font-weight:700;
+    }
+    .pill-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+    .pill-green  { background:#ecfdf5; color:#059669; }
+    .pill-green .pill-dot { background:#059669; }
+    .pill-red    { background:#fff1f2; color:#e11d48; }
+    .pill-red .pill-dot   { background:#e11d48; }
+    .pill-yellow { background:#fffbeb; color:#d97706; }
+    .pill-yellow .pill-dot{ background:#d97706; }
+    .pill-blue   { background:#eff6ff; color:#2563eb; }
+    .pill-blue .pill-dot  { background:#2563eb; }
+    .pill-purple { background:#f5f3ff; color:#7c3aed; }
+    .pill-purple .pill-dot{ background:#7c3aed; }
+    .pill-gray   { background:#f1f5f9; color:#64748b; }
+    .pill-gray .pill-dot  { background:#64748b; }
+
+    /* ===================================
+       BUTTONS
+    =================================== */
+    .btn {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:9px 18px; border-radius:9px;
+      font-size:13px; font-weight:700; cursor:pointer;
+      border:none; transition:all 0.2s ease;
+    }
+    .btn-primary {
+      background:linear-gradient(135deg,#3b82f6,#1d4ed8);
+      color:#fff; box-shadow:0 2px 8px rgba(59,130,246,0.3);
+    }
+    .btn-primary:hover { transform:translateY(-1px); box-shadow:0 4px 14px rgba(59,130,246,0.4); }
+    .btn-ghost {
+      background:#f1f5f9; color:#475569; border:1px solid #e2e8f0;
+    }
+    .btn-ghost:hover { background:#e2e8f0; }
+    .btn-sm { padding:6px 12px; font-size:12px; border-radius:7px; }
+    .btn-danger { background:#fff1f2; color:#e11d48; border:1px solid #fecdd3; }
+    .btn-danger:hover { background:#fecdd3; }
+
+    /* ===================================
+       ACTION CARDS GRID
+    =================================== */
+    .action-row {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+      gap:16px;
+    }
+    .acard {
+      background:#fff; border:1px solid #f1f5f9;
+      border-radius:14px; padding:20px;
+      cursor:pointer; transition:all 0.25s ease;
+      box-shadow:0 1px 3px rgba(0,0,0,0.04);
+      animation:fadeUp 0.5s ease;
+    }
+    .acard:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,0.1); border-color:#3b82f6; }
+    .acard-icon {
+      width:44px; height:44px; border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:20px; margin-bottom:14px;
+    }
+    .acard h3  { font-size:14px; font-weight:700; color:#0f172a; margin-bottom:6px; }
+    .acard p   { font-size:12px; color:#94a3b8; line-height:1.5; margin-bottom:14px; }
+    .acard-arrow {
+      font-size:12px; font-weight:700; color:#3b82f6;
+      display:flex; align-items:center; gap:4px;
+      transition:gap 0.2s;
+    }
+    .acard:hover .acard-arrow { gap:8px; }
+
+    /* ===================================
+       PROGRESS BAR
+    =================================== */
+    .pbar-wrap { background:#f1f5f9; border-radius:20px; height:7px; overflow:hidden; }
+    .pbar-fill { height:100%; border-radius:20px; transition:width 0.8s ease; }
+    .pbar-blue   { background:linear-gradient(90deg,#3b82f6,#60a5fa); }
+    .pbar-green  { background:linear-gradient(90deg,#10b981,#34d399); }
+    .pbar-orange { background:linear-gradient(90deg,#f59e0b,#fbbf24); }
+
+    /* ===================================
+       GRADE CHIP
+    =================================== */
+    .grade {
+      display:inline-flex; align-items:center; justify-content:center;
+      width:30px; height:30px; border-radius:8px;
+      font-weight:800; font-size:14px;
+    }
+    .grade-A { background:#ecfdf5; color:#059669; }
+    .grade-B { background:#eff6ff; color:#2563eb; }
+    .grade-C { background:#fffbeb; color:#d97706; }
+    .grade-D { background:#fff1f2; color:#e11d48; }
+
+    /* ===================================
+       ATTENDANCE ITEM
+    =================================== */
+    .att-item {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 0; border-bottom:1px solid #f1f5f9;
+    }
+    .att-item:last-child { border-bottom:none; }
+    .att-date-block .att-date { font-weight:700; color:#0f172a; font-size:14px; }
+    .att-date-block .att-day  { font-size:12px; color:#94a3b8; margin-top:2px; }
+    .att-counts { display:flex; gap:16px; }
+    .att-num { text-align:center; }
+    .att-num .an-val { font-size:18px; font-weight:800; }
+    .att-num .an-lbl { font-size:11px; color:#94a3b8; }
+    .att-pct-pill {
+      padding:5px 14px; border-radius:20px;
+      font-size:13px; font-weight:800; min-width:56px; text-align:center;
+    }
+    .attp-high { background:#ecfdf5; color:#059669; }
+    .attp-mid  { background:#fffbeb; color:#d97706; }
+    .attp-low  { background:#fff1f2; color:#e11d48; }
+
+    /* ===================================
+       FEE ITEM
+    =================================== */
+    .fee-item {
+      display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap;
+      padding:16px; border-radius:12px; margin-bottom:10px;
+      background:#f8fafc; border:1px solid #f1f5f9;
+      transition:background 0.2s;
+    }
+    .fee-item:hover { background:#f0f9ff; border-color:#bae6fd; }
+    .fee-sem { font-weight:700; color:#0f172a; font-size:14px; }
+    .fee-desc{ font-size:12px; color:#94a3b8; margin-top:2px; }
+    .fee-due { font-size:11px; color:#94a3b8; margin-top:4px; }
+    .fee-right { display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
+    .fee-amount { font-size:20px; font-weight:800; color:#0f172a; }
+
+    /* ===================================
+       SECTION HEADER
+    =================================== */
+    .section-hd {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:16px;
+    }
+    .section-hd h2 { font-size:16px; font-weight:700; color:#0f172a; }
+    .section-hd p  { font-size:13px; color:#94a3b8; }
+
+    /* ===================================
+       WELCOME CARD
+    =================================== */
+    .welcome-card {
+      background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#0f4c81 100%);
+      border-radius:18px; padding:28px 32px;
+      margin-bottom:28px;
+      display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;
+      position:relative; overflow:hidden;
+      animation:fadeUp 0.4s ease;
+    }
+    .welcome-card::before {
+      content:'';
+      position:absolute; top:-40px; right:-40px;
+      width:200px; height:200px; border-radius:50%;
+      background:rgba(59,130,246,0.15);
+    }
+    .welcome-card::after {
+      content:'';
+      position:absolute; bottom:-60px; left:100px;
+      width:180px; height:180px; border-radius:50%;
+      background:rgba(16,185,129,0.1);
+    }
+    .welcome-text { position:relative; z-index:1; }
+    .welcome-text h2 { font-size:22px; font-weight:800; color:#fff; }
+    .welcome-text p  { font-size:14px; color:rgba(255,255,255,0.65); margin-top:5px; }
+    .welcome-stats {
+      position:relative; z-index:1;
+      display:flex; gap:20px;
+    }
+    .wstat {
+      background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15);
+      border-radius:12px; padding:12px 20px; text-align:center;
+    }
+    .wstat-val { font-size:20px; font-weight:800; color:#fff; }
+    .wstat-lbl { font-size:11px; color:rgba(255,255,255,0.55); margin-top:2px; }
+
+    /* ===================================
+       TOAST
+    =================================== */
+    .toast {
+      position:fixed; bottom:24px; right:24px;
+      background:#0f172a; color:#fff;
+      padding:13px 18px; border-radius:12px;
+      font-size:13px; font-weight:600;
+      box-shadow:0 12px 32px rgba(0,0,0,0.25);
+      z-index:9999; animation:fadeUp 0.3s ease;
+      display:flex; align-items:center; gap:10px;
+      border-left:4px solid #10b981;
+      max-width:320px;
+    }
+    .toast-icon {
+      width:24px; height:24px; border-radius:50%;
+      background:#10b981; display:flex; align-items:center; justify-content:center;
+      font-size:12px; flex-shrink:0;
+    }
+
+    /* ===================================
+       COURSE PERFORMANCE
+    =================================== */
+    .cp-item {
+      display:flex; align-items:center; gap:16px;
+      padding:14px 0; border-bottom:1px solid #f1f5f9;
+    }
+    .cp-item:last-child { border-bottom:none; }
+    .cp-info { flex:1; }
+    .cp-name { font-weight:700; color:#0f172a; font-size:14px; }
+    .cp-inst { font-size:12px; color:#94a3b8; margin-top:2px; margin-bottom:8px; }
+    .cp-right { display:flex; align-items:center; gap:12px; flex-shrink:0; }
+    .cp-pct   { font-size:15px; font-weight:800; color:#0f172a; }
+
+    /* ===================================
+       MOBILE
+    =================================== */
+    @media(max-width:768px) {
+      .sidebar { transform:translateX(-100%); }
+      .sidebar.open { transform:translateX(0); }
+      .main-content { margin-left:0; }
+      .welcome-stats { display:none; }
+      .stats-row { grid-template-columns:repeat(2,1fr); gap:12px; }
+      .page-content { padding:16px; }
+      .topbar { padding:0 16px; }
+    }
+    @media(max-width:480px) {
+      .stats-row { grid-template-columns:1fr; }
+    }
+
+    /* ===================================
+       CHIP / TAG
+    =================================== */
+    .tag {
+      display:inline-block; padding:3px 10px; border-radius:20px;
+      font-size:11px; font-weight:700; background:#f1f5f9; color:#475569;
+    }
+
+    /* DIVIDER */
+    .divider { height:1px; background:#f1f5f9; margin:8px 0 20px; }
+
+    /* ===================================
+       OVERVIEW MINI CARD (for staff)
+    =================================== */
+    .mini-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:24px; }
+    .mini-card {
+      background:#f8fafc; border:1px solid #f1f5f9; border-radius:12px;
+      padding:16px; text-align:center;
+    }
+    .mini-card .mc-val { font-size:22px; font-weight:800; color:#0f172a; }
+    .mini-card .mc-lbl { font-size:12px; color:#94a3b8; margin-top:4px; }
+
+    /* FEE SUMMARY BAR */
+    .fee-summary-bar {
+      display:flex; align-items:center; gap:24px; flex-wrap:wrap;
+      background:#f8fafc; border:1px solid #f1f5f9;
+      border-radius:12px; padding:16px 20px; margin-bottom:20px;
+    }
+    .fsb-item .fsb-val { font-size:18px; font-weight:800; color:#0f172a; }
+    .fsb-item .fsb-lbl { font-size:12px; color:#94a3b8; }
+    .fsb-div { width:1px; height:36px; background:#e2e8f0; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+/* ========== DATA ========== */
+const USERS = {
+  admin:   { username:'admin',   password:'admin123',   role:'admin',   name:'Dr. Arjun Sharma',   dept:'Administration' },
+  staff:   { username:'staff',   password:'staff123',   role:'staff',   name:'Prof. Meera Nair',   dept:'Computer Science' },
+  student: { username:'student', password:'student123', role:'student', name:'Rahul Verma',         dept:'B.Tech CSE · Sem 5' },
+};
+const STUDENTS = [
+  { id:'STU001', name:'Rahul Verma',   email:'rahul.v@college.edu',  branch:'CSE', year:'3rd', cgpa:'8.6', status:'active' },
+  { id:'STU002', name:'Ananya Singh',  email:'ananya.s@college.edu', branch:'ECE', year:'2nd', cgpa:'9.1', status:'active' },
+  { id:'STU003', name:'Rohan Mehta',   email:'rohan.m@college.edu',  branch:'ME',  year:'4th', cgpa:'7.8', status:'active' },
+  { id:'STU004', name:'Priya Kapoor',  email:'priya.k@college.edu',  branch:'CSE', year:'1st', cgpa:'8.2', status:'inactive' },
+  { id:'STU005', name:'Amit Joshi',    email:'amit.j@college.edu',   branch:'CE',  year:'2nd', cgpa:'7.5', status:'active' },
+];
+const STAFF = [
+  { id:'STA001', name:'Prof. Meera Nair',  dept:'Computer Science', desig:'Associate Prof.', courses:3, status:'active' },
+  { id:'STA002', name:'Dr. Suresh Kumar',  dept:'Electronics',      desig:'Professor',       courses:2, status:'active' },
+  { id:'STA003', name:'Ms. Lakshmi Iyer',  dept:'Mathematics',      desig:'Asst. Professor', courses:4, status:'active' },
+  { id:'STA004', name:'Mr. Kiran Patil',   dept:'Mechanical',       desig:'Lecturer',        courses:2, status:'inactive' },
+];
+const STAFF_COURSES = [
+  { id:'CS301', name:'Data Structures & Algorithms', students:52, credits:4, status:'active',    progress:78 },
+  { id:'CS401', name:'Machine Learning',             students:38, credits:3, status:'active',    progress:45 },
+  { id:'CS201', name:'Object-Oriented Programming',  students:65, credits:4, status:'completed', progress:100 },
+];
+const ATTENDANCE = [
+  { date:'2026-09-29', day:'Monday',    present:46, absent:6,  total:52 },
+  { date:'2026-09-28', day:'Sunday',    holiday:true },
+  { date:'2026-09-27', day:'Saturday',  present:40, absent:12, total:52 },
+  { date:'2026-09-26', day:'Friday',    present:48, absent:4,  total:52 },
+  { date:'2026-09-25', day:'Thursday',  present:44, absent:8,  total:52 },
+  { date:'2026-09-24', day:'Wednesday', present:50, absent:2,  total:52 },
+];
+const STU_COURSES = [
+  { id:'CS301', name:'Data Structures & Algorithms', inst:'Prof. Meera Nair', credits:4, grade:'A', marks:91 },
+  { id:'CS302', name:'Database Management Systems',  inst:'Dr. Suresh Kumar', credits:3, grade:'B', marks:78 },
+  { id:'CS303', name:'Computer Networks',            inst:'Ms. Lakshmi Iyer', credits:3, grade:'A', marks:85 },
+  { id:'CS304', name:'Operating Systems',            inst:'Mr. Kiran Patil',  credits:4, grade:'B', marks:74 },
+];
+const FEES = [
+  { sem:'Semester 5 (Current)', desc:'Tuition + Lab + Library', amount:45000, due:'2026-10-15', status:'pending' },
+  { sem:'Semester 4',           desc:'Tuition + Lab + Library', amount:42000, due:'2026-04-15', status:'paid' },
+  { sem:'Semester 3',           desc:'Tuition + Lab + Library', amount:42000, due:'2025-10-15', status:'paid' },
+  { sem:'Semester 2',           desc:'Tuition + Lab + Library', amount:40000, due:'2025-04-15', status:'paid' },
+];
+
+/* ========== HELPERS ========== */
+const fmt = n => '₹' + n.toLocaleString('en-IN');
+const initials = name => name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+
+function StatusPill({ status }) {
+  const map = {
+    active:    { cls:'pill-green',  lbl:'Active'    },
+    inactive:  { cls:'pill-red',    lbl:'Inactive'  },
+    paid:      { cls:'pill-green',  lbl:'Paid'      },
+    pending:   { cls:'pill-yellow', lbl:'Pending'   },
+    completed: { cls:'pill-blue',   lbl:'Completed' },
+  };
+  const {cls,lbl} = map[status] || {cls:'pill-gray',lbl:status};
+  return <span className={`pill ${cls}`}><span className="pill-dot"></span>{lbl}</span>;
+}
+
+function GradeBox({ grade }) {
+  return <span className={`grade grade-${grade}`}>{grade}</span>;
+}
+
+function Toast({ msg, onClose }) {
+  useEffect(() => { const t = setTimeout(onClose, 3000); return () => clearTimeout(t); }, []);
+  return (
+    <div className="toast">
+      <div className="toast-icon">✓</div>
+      <span>{msg}</span>
+    </div>
+  );
+}
+
+/* ========== SIDEBAR ========== */
+function Sidebar({ user, activeTab, setTab, onLogout, navItems }) {
+  const avaClass = {admin:'ava-admin', staff:'ava-staff', student:'ava-student'}[user.role];
+  return (
+    <div className="sidebar">
+      <div className="sidebar-brand">
+        <div className="sidebar-brand-icon">🎓</div>
+        <div className="sidebar-brand-text">
+          <div className="sb-title">College ERP</div>
+          <div className="sb-sub">Management System</div>
+        </div>
+      </div>
+
+      <div className="sidebar-user">
+        <div className={`user-ava ${avaClass}`}>{initials(user.name)}</div>
+        <div className="user-info">
+          <div className="ui-name">{user.name}</div>
+          <div className="ui-role">{user.dept}</div>
+        </div>
+      </div>
+
+      <div className="sidebar-nav">
+        <div className="nav-section-label">Navigation</div>
+        {navItems.map(item => (
+          <button
+            key={item.id}
+            className={`nav-item${activeTab===item.id?' active':''}`}
+            onClick={() => setTab(item.id)}
+          >
+            <div className="nav-icon-wrap">{item.icon}</div>
+            {item.label}
+            {item.badge && <span className="nav-badge">{item.badge}</span>}
+          </button>
+        ))}
+      </div>
+
+      <div className="sidebar-footer">
+        <div className="nav-section-label" style={{padding:'0 10px',marginBottom:8}}>Account</div>
+        <button className="logout-nav" onClick={onLogout}>
+          <div className="nav-icon-wrap">🚪</div>
+          Sign Out
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ========== TOPBAR ========== */
+function Topbar({ title, subtitle }) {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-IN', {weekday:'short', day:'numeric', month:'short', year:'numeric'});
+  return (
+    <div className="topbar">
+      <div className="topbar-left">
+        <h1>{title}</h1>
+        <p>{subtitle}</p>
+      </div>
+      <div className="topbar-right">
+        <div className="tb-date">📅 {dateStr}</div>
+        <button className="tb-notif">
+          🔔
+          <span className="tb-notif-dot"></span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ========== LOGIN ========== */
+function LoginPage({ onLogin }) {
+  const [role, setRole]       = useState('admin');
+  const [username, setUser]   = useState('admin');
+  const [password, setPass]   = useState('admin123');
+  const [err, setErr]         = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const defaults = { admin:{u:'admin',p:'admin123'}, staff:{u:'staff',p:'staff123'}, student:{u:'student',p:'student123'} };
+  const setRole_ = r => { setRole(r); setUser(defaults[r].u); setPass(defaults[r].p); setErr(''); };
+
+  const submit = e => {
+    e.preventDefault(); setErr(''); setLoading(true);
+    setTimeout(() => {
+      const found = Object.values(USERS).find(u => u.username===username && u.password===password && u.role===role);
+      if (found) onLogin(found);
+      else { setErr('Invalid credentials. Please try again.'); setLoading(false); }
+    }, 900);
+  };
+
+  const roles = [
+    { r:'admin',   icon:'🛡️', label:'Admin'   },
+    { r:'staff',   icon:'👨‍🏫', label:'Faculty' },
+    { r:'student', icon:'🎓', label:'Student' },
+  ];
+  const qcColors = { admin:'#e11d48', staff:'#059669', student:'#2563eb' };
+
+  return (
+    <div className="login-page">
+      {/* LEFT PANEL */}
+      <div className="login-panel">
+        <div className="login-panel-content">
+          <div className="panel-logo">🎓</div>
+          <div className="panel-title">College ERP</div>
+          <div className="panel-sub">A unified platform for students,<br/>faculty and administration.</div>
+          <div className="panel-features">
+            {[
+              { icon:'📊', title:'Real-time Analytics', desc:'Live dashboards for every stakeholder' },
+              { icon:'📚', title:'Course Management',    desc:'End-to-end academic lifecycle' },
+              { icon:'💳', title:'Fee & Finance',        desc:'Transparent fee tracking & payments' },
+              { icon:'📋', title:'Smart Attendance',     desc:'Date-wise records with insights' },
+            ].map((f,i) => (
+              <div key={i} className="panel-feat">
+                <div className="panel-feat-icon">{f.icon}</div>
+                <div>
+                  <div style={{fontWeight:700,marginBottom:2}}>{f.title}</div>
+                  <div style={{fontSize:12,color:'rgba(255,255,255,0.55)'}}>{f.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT FORM */}
+      <div className="login-form-side">
+        <div className="login-form-box">
+          <div className="lf-heading">Welcome Back 👋</div>
+          <div className="lf-sub">Sign in to access your portal</div>
+
+          {/* Role Selector */}
+          <div className="role-selector">
+            {roles.map(r => (
+              <div key={r.r} className={`role-opt${role===r.r?' selected':''}`} onClick={() => setRole_(r.r)}>
+                <span className="role-opt-icon">{r.icon}</span>
+                <span className="role-opt-label">{r.label}</span>
+              </div>
+            ))}
+          </div>
+
+          {err && <div className="lf-err">⚠️ {err}</div>}
+
+          <form onSubmit={submit}>
+            <label className="lf-label">Username</label>
+            <input className="lf-input" value={username} onChange={e=>setUser(e.target.value)} placeholder="Enter username" required />
+            <label className="lf-label">Password</label>
+            <input className="lf-input" type="password" value={password} onChange={e=>setPass(e.target.value)} placeholder="Enter password" required />
+            <button type="submit" className="lf-btn" disabled={loading}>
+              {loading ? <><span className="spinner"></span> Authenticating…</> : '→ Sign In'}
+            </button>
+          </form>
+
+          <div className="quick-creds">
+            <div className="qc-title">⚡ Quick Fill — Click a Role</div>
+            <div className="qc-grid">
+              {roles.map(r => (
+                <div key={r.r} className="qc-card" onClick={() => setRole_(r.r)}>
+                  <div className="qc-role" style={{color:qcColors[r.r]}}>{r.icon} {r.label}</div>
+                  <div className="qc-creds">{defaults[r.r].u} / {defaults[r.r].p}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ========== ADMIN PORTAL ========== */
+function AdminPortal({ user, onLogout }) {
+  const [tab, setTab]   = useState('dashboard');
+  const [toast, setToast] = useState('');
+
+  const navItems = [
+    { id:'dashboard', icon:'📊', label:'Dashboard'   },
+    { id:'students',  icon:'🎓', label:'Students',    badge: STUDENTS.length },
+    { id:'staff',     icon:'👨‍🏫', label:'Staff',       badge: STAFF.length   },
+    { id:'reports',   icon:'📈', label:'Reports'      },
+    { id:'settings',  icon:'⚙️', label:'Settings'     },
+  ];
+
+  const tabTitles = {
+    dashboard:'Dashboard', students:'Students', staff:'Staff', reports:'Reports', settings:'Settings'
+  };
+
+  return (
+    <div className="portal-shell">
+      <Sidebar user={user} activeTab={tab} setTab={setTab} onLogout={onLogout} navItems={navItems} />
+      <div className="main-content">
+        <Topbar title={tabTitles[tab] || 'Dashboard'} subtitle="Admin Portal · College ERP" />
+        <div className="page-content">
+
+          {tab === 'dashboard' && <>
+            <div className="welcome-card">
+              <div className="welcome-text">
+                <h2>👋 Good to see you, {user.name.split(' ')[0]}!</h2>
+                <p>Here's an overview of the college activity today.</p>
+              </div>
+              <div className="welcome-stats">
+                <div className="wstat">
+                  <div className="wstat-val">{STUDENTS.filter(s=>s.status==='active').length}</div>
+                  <div className="wstat-lbl">Active Students</div>
+                </div>
+                <div className="wstat">
+                  <div className="wstat-val">{STAFF.filter(s=>s.status==='active').length}</div>
+                  <div className="wstat-lbl">Active Staff</div>
+                </div>
+                <div className="wstat">
+                  <div className="wstat-val">87.4%</div>
+                  <div className="wstat-lbl">Avg Attendance</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="stats-row">
+              <div className="scard blue">
+                <div className="scard-top">
+                  <div className="scard-icon">🎓</div>
+                  <span className="scard-trend trend-up">+3 ↑</span>
+                </div>
+                <div><div className="scard-value">{STUDENTS.length}</div><div className="scard-label">Total Students</div></div>
+              </div>
+              <div className="scard green">
+                <div className="scard-top">
+                  <div className="scard-icon">👨‍🏫</div>
+                  <span className="scard-trend trend-flat">Stable</span>
+                </div>
+                <div><div className="scard-value">{STAFF.length}</div><div className="scard-label">Total Staff</div></div>
+              </div>
+              <div className="scard purple">
+                <div className="scard-top">
+                  <div className="scard-icon">📚</div>
+                  <span className="scard-trend trend-up">+1 ↑</span>
+                </div>
+                <div><div className="scard-value">{STAFF_COURSES.length}</div><div className="scard-label">Active Courses</div></div>
+              </div>
+              <div className="scard orange">
+                <div className="scard-top">
+                  <div className="scard-icon">📈</div>
+                  <span className="scard-trend trend-up">+2% ↑</span>
+                </div>
+                <div><div className="scard-value">87.4%</div><div className="scard-label">Avg Attendance</div></div>
+              </div>
+            </div>
+
+            <div className="section-hd"><h2>⚡ Quick Actions</h2></div>
+            <div className="action-row">
+              {[
+                { icon:'📋', bg:'#eff6ff', title:'Generate Reports', desc:'Create academic and financial reports instantly.', lbl:'Open Reports' },
+                { icon:'⚙️', bg:'#f5f3ff', title:'System Config',    desc:'Manage departments, academic year, and roles.',   lbl:'Configure'     },
+                { icon:'📢', bg:'#ecfdf5', title:'Announcements',    desc:'Send notices to students and staff.',             lbl:'Post Notice'   },
+                { icon:'📊', bg:'#fffbeb', title:'Analytics',        desc:'View real-time performance metrics.',             lbl:'View Stats'    },
+              ].map((a,i) => (
+                <div key={i} className="acard" onClick={() => setToast(`${a.title} opened!`)}>
+                  <div className="acard-icon" style={{background:a.bg}}>{a.icon}</div>
+                  <h3>{a.title}</h3>
+                  <p>{a.desc}</p>
+                  <div className="acard-arrow">→ {a.lbl}</div>
+                </div>
+              ))}
+            </div>
+          </>}
+
+          {tab === 'students' && (
+            <div className="ccard">
+              <div className="ccard-head">
+                <div className="ccard-head-left">
+                  <div className="ccard-head-icon" style={{background:'#eff6ff'}}>🎓</div>
+                  <div>
+                    <div className="ccard-title">Student Directory</div>
+                    <div className="ccard-sub">{STUDENTS.length} students enrolled</div>
+                  </div>
+                </div>
+                <button className="btn btn-primary btn-sm" onClick={() => setToast('Add student form opened!')}>+ Add Student</button>
+              </div>
+              <div className="ccard-body" style={{padding:0}}>
+                <div className="tw">
+                  <table>
+                    <thead>
+                      <tr><th>Roll No</th><th>Student</th><th>Branch</th><th>Year</th><th>CGPA</th><th>Status</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                      {STUDENTS.map(s => (
+                        <tr key={s.id}>
+                          <td><span className="td-code">{s.id}</span></td>
+                          <td>
+                            <div style={{display:'flex',alignItems:'center',gap:10}}>
+                              <div style={{width:32,height:32,borderRadius:'50%',background:'linear-gradient(135deg,#3b82f6,#1d4ed8)',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:12,fontWeight:700,flexShrink:0}}>{initials(s.name)}</div>
+                              <div>
+                                <div className="td-name">{s.name}</div>
+                                <div className="td-sub">{s.email}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td><span className="tag">{s.branch}</span></td>
+                          <td>{s.year} Year</td>
+                          <td><strong style={{color:'#0f172a'}}>{s.cgpa}</strong></td>
+                          <td><StatusPill status={s.status} /></td>
+                          <td><button className="btn btn-ghost btn-sm" onClick={() => setToast(`${s.name} profile opened!`)}>View →</button></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tab === 'staff' && (
+            <div className="ccard">
+              <div className="ccard-head">
+                <div className="ccard-head-left">
+                  <div className="ccard-head-icon" style={{background:'#ecfdf5'}}>👨‍🏫</div>
+                  <div>
+                    <div className="ccard-title">Faculty Directory</div>
+                    <div className="ccard-sub">{STAFF.length} faculty members</div>
+                  </div>
+                </div>
+                <button className="btn btn-primary btn-sm" onClick={() => setToast('Add staff form opened!')}>+ Add Staff</button>
+              </div>
+              <div className="ccard-body" style={{padding:0}}>
+                <div className="tw">
+                  <table>
+                    <thead>
+                      <tr><th>Staff ID</th><th>Faculty</th><th>Department</th><th>Designation</th><th>Courses</th><th>Status</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                      {STAFF.map(s => (
+                        <tr key={s.id}>
+                          <td><span className="td-code">{s.id}</span></td>
+                          <td>
+                            <div style={{display:'flex',alignItems:'center',gap:10}}>
+                              <div style={{width:32,height:32,borderRadius:'50%',background:'linear-gradient(135deg,#10b981,#059669)',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:12,fontWeight:700,flexShrink:0}}>{initials(s.name)}</div>
+                              <div className="td-name">{s.name}</div>
+                            </div>
+                          </td>
+                          <td>{s.dept}</td>
+                          <td><span className="td-sub" style={{color:'#374151',fontWeight:600}}>{s.desig}</span></td>
+                          <td><span className="pill pill-blue"><span className="pill-dot"></span>{s.courses} courses</span></td>
+                          <td><StatusPill status={s.status} /></td>
+                          <td><button className="btn btn-ghost btn-sm" onClick={() => setToast(`${s.name} profile opened!`)}>View →</button></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {(tab==='reports' || tab==='settings') && (
+            <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'50vh',flexDirection:'column',gap:12}}>
+              <div style={{fontSize:48}}>{tab==='reports'?'📈':'⚙️'}</div>
+              <div style={{fontSize:18,fontWeight:700,color:'#0f172a'}}>{tab==='reports'?'Reports':'Settings'}</div>
+              <div style={{fontSize:14,color:'#94a3b8'}}>This section is coming soon.</div>
+            </div>
+          )}
+        </div>
+      </div>
+      {toast && <Toast msg={toast} onClose={() => setToast('')} />}
+    </div>
+  );
+}
+
+/* ========== STAFF PORTAL ========== */
+function StaffPortal({ user, onLogout }) {
+  const [tab, setTab]   = useState('dashboard');
+  const [toast, setToast] = useState('');
+
+  const navItems = [
+    { id:'dashboard',  icon:'📊', label:'Dashboard'  },
+    { id:'courses',    icon:'📚', label:'My Courses', badge:STAFF_COURSES.length },
+    { id:'attendance', icon:'📋', label:'Attendance'  },
+    { id:'grades',     icon:'📝', label:'Grades'      },
+  ];
+
+  const totalStudents = STAFF_COURSES.reduce((a,c) => a + c.students, 0);
+
+  return (
+    <div className="portal-shell">
+      <Sidebar user={user} activeTab={tab} setTab={setTab} onLogout={onLogout} navItems={navItems} />
+      <div className="main-content">
+        <Topbar title={({dashboard:'Dashboard',courses:'My Courses',attendance:'Attendance',grades:'Grades'})[tab]||'Dashboard'} subtitle="Faculty Portal · College ERP" />
+        <div className="page-content">
+
+          {tab === 'dashboard' && <>
+            <div className="welcome-card">
+              <div className="welcome-text">
+                <h2>👋 Hello, {user.name.split(' ')[0]}!</h2>
+                <p>You have {STAFF_COURSES.filter(c=>c.status==='active').length} active courses and {totalStudents} students this semester.</p>
+              </div>
+              <div className="welcome-stats">
+                <div className="wstat"><div className="wstat-val">{STAFF_COURSES.filter(c=>c.status==='active').length}</div><div className="wstat-lbl">Active Courses</div></div>
+                <div className="wstat"><div className="wstat-val">{totalStudents}</div><div className="wstat-lbl">Students</div></div>
+                <div className="wstat"><div className="wstat-val">88%</div><div className="wstat-lbl">Avg Attendance</div></div>
+              </div>
+            </div>
+
+            <div className="stats-row">
+              <div className="scard purple">
+                <div className="scard-top"><div className="scard-icon">📚</div><span className="scard-trend trend-flat">Sem 5</span></div>
+                <div><div className="scard-value">{STAFF_COURSES.filter(c=>c.status==='active').length}</div><div className="scard-label">Teaching Courses</div></div>
+              </div>
+              <div className="scard blue">
+                <div className="scard-top"><div className="scard-icon">🎓</div><span className="scard-trend trend-up">+5 ↑</span></div>
+                <div><div className="scard-value">{totalStudents}</div><div className="scard-label">Total Students</div></div>
+              </div>
+              <div className="scard green">
+                <div className="scard-top"><div className="scard-icon">📈</div><span className="scard-trend trend-up">+2% ↑</span></div>
+                <div><div className="scard-value">88.2%</div><div className="scard-label">Avg Attendance</div></div>
+              </div>
+              <div className="scard orange">
+                <div className="scard-top"><div className="scard-icon">📝</div><span className="scard-trend trend-down">Due ↓</span></div>
+                <div><div className="scard-value">12</div><div className="scard-label">Pending Assessments</div></div>
+              </div>
+            </div>
+
+            <div className="section-hd"><h2>⚡ Quick Actions</h2></div>
+            <div className="action-row">
+              {[
+                { icon:'✅', bg:'#ecfdf5', title:'Mark Attendance', desc:'Record attendance for today\'s class sessions.', lbl:'Mark Now' },
+                { icon:'📝', bg:'#f5f3ff', title:'Grade Submissions', desc:'Review and grade student assignment submissions.', lbl:'Grade' },
+                { icon:'📤', bg:'#eff6ff', title:'Upload Materials', desc:'Share lecture notes, slides and resources.', lbl:'Upload' },
+                { icon:'📊', bg:'#fffbeb', title:'Student Analytics', desc:'View performance trends across your courses.', lbl:'Analyze' },
+              ].map((a,i) => (
+                <div key={i} className="acard" onClick={() => setToast(`${a.title} opened!`)}>
+                  <div className="acard-icon" style={{background:a.bg}}>{a.icon}</div>
+                  <h3>{a.title}</h3><p>{a.desc}</p>
+                  <div className="acard-arrow">→ {a.lbl}</div>
+                </div>
+              ))}
+            </div>
+          </>}
+
+          {tab === 'courses' && (
+            <div className="ccard">
+              <div className="ccard-head">
+                <div className="ccard-head-left">
+                  <div className="ccard-head-icon" style={{background:'#f5f3ff'}}>📚</div>
+                  <div>
+                    <div className="ccard-title">My Courses</div>
+                    <div className="ccard-sub">Semester 5 · Academic Year 2026</div>
+                  </div>
+                </div>
+                <button className="btn btn-ghost btn-sm" onClick={() => setToast('Course schedule opened!')}>View Schedule</button>
+              </div>
+              <div className="ccard-body" style={{padding:0}}>
+                <div className="tw">
+                  <table>
+                    <thead>
+                      <tr><th>Course ID</th><th>Course Name</th><th>Enrolled</th><th>Credits</th><th>Progress</th><th>Status</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                      {STAFF_COURSES.map(c => (
+                        <tr key={c.id}>
+                          <td><span className="td-code">{c.id}</span></td>
+                          <td><div className="td-name">{c.name}</div></td>
+                          <td>
+                            <div style={{display:'flex',alignItems:'center',gap:8}}>
+                              <span style={{fontWeight:700,color:'#3b82f6',fontSize:16}}>{c.students}</span>
+                              <span style={{fontSize:12,color:'#94a3b8'}}>students</span>
+                            </div>
+                          </td>
+                          <td><span className="tag">{c.credits} Credits</span></td>
+                          <td>
+                            <div style={{width:120}}>
+                              <div style={{display:'flex',justifyContent:'space-between',fontSize:11,color:'#94a3b8',marginBottom:4}}>
+                                <span>Syllabus</span><span>{c.progress}%</span>
+                              </div>
+                              <div className="pbar-wrap"><div className="pbar-fill pbar-blue" style={{width:`${c.progress}%`}}></div></div>
+                            </div>
+                          </td>
+                          <td><StatusPill status={c.status} /></td>
+                          <td><button className="btn btn-ghost btn-sm" onClick={() => setToast(`${c.name} opened!`)}>Manage →</button></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tab === 'attendance' && (
+            <div className="ccard">
+              <div className="ccard-head">
+                <div className="ccard-head-left">
+                  <div className="ccard-head-icon" style={{background:'#eff6ff'}}>📋</div>
+                  <div>
+                    <div className="ccard-title">Attendance Records</div>
+                    <div className="ccard-sub">CS301 · Data Structures & Algorithms</div>
+                  </div>
+                </div>
+                <button className="btn btn-primary btn-sm" onClick={() => setToast('Mark attendance opened!')}>+ Mark Today</button>
+              </div>
+              <div className="ccard-body">
+                {ATTENDANCE.map((a, i) => {
+                  if (a.holiday) return (
+                    <div key={i} className="att-item">
+                      <div className="att-date-block">
+                        <div className="att-date">{a.date}</div>
+                        <div className="att-day">{a.day}</div>
+                      </div>
+                      <span className="pill pill-gray"><span className="pill-dot"></span>Holiday / No Class</span>
+                    </div>
+                  );
+                  const p = Math.round((a.present / a.total) * 100);
+                  const cls = p>=85?'attp-high':p>=70?'attp-mid':'attp-low';
+                  return (
+                    <div key={i} className="att-item">
+                      <div className="att-date-block">
+                        <div className="att-date">{a.date}</div>
+                        <div className="att-day">{a.day}</div>
+                      </div>
+                      <div className="att-counts">
+                        <div className="att-num">
+                          <div className="an-val" style={{color:'#059669'}}>{a.present}</div>
+                          <div className="an-lbl">Present</div>
+                        </div>
+                        <div className="att-num">
+                          <div className="an-val" style={{color:'#e11d48'}}>{a.absent}</div>
+                          <div className="an-lbl">Absent</div>
+                        </div>
+                        <div className="att-num">
+                          <div className="an-val">{a.total}</div>
+                          <div className="an-lbl">Total</div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className={`att-pct-pill ${cls}`}>{p}%</div>
+                        <div className="pbar-wrap" style={{width:100,marginTop:6}}>
+                          <div className={`pbar-fill ${p>=85?'pbar-green':p>=70?'pbar-orange':'pbar-blue'}`} style={{width:`${p}%`}}></div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {tab === 'grades' && (
+            <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'50vh',flexDirection:'column',gap:12}}>
+              <div style={{fontSize:48}}>📝</div>
+              <div style={{fontSize:18,fontWeight:700,color:'#0f172a'}}>Gradebook</div>
+              <div style={{fontSize:14,color:'#94a3b8'}}>Grade management coming soon.</div>
+            </div>
+          )}
+        </div>
+      </div>
+      {toast && <Toast msg={toast} onClose={() => setToast('')} />}
+    </div>
+  );
+}
+
+/* ========== STUDENT PORTAL ========== */
+function StudentPortal({ user, onLogout }) {
+  const [tab, setTab]   = useState('dashboard');
+  const [toast, setToast] = useState('');
+
+  const navItems = [
+    { id:'dashboard', icon:'📊', label:'Dashboard'   },
+    { id:'courses',   icon:'📚', label:'My Courses',  badge: STU_COURSES.length },
+    { id:'fees',      icon:'💳', label:'Fee Portal'   },
+    { id:'results',   icon:'🏆', label:'Results'      },
+  ];
+
+  const avgMarks  = Math.round(STU_COURSES.reduce((a,c) => a+c.marks, 0) / STU_COURSES.length);
+  const gpa       = (avgMarks / 25).toFixed(2);
+  const totalFees = FEES.reduce((a,f) => a+f.amount, 0);
+  const paidFees  = FEES.filter(f=>f.status==='paid').reduce((a,f) => a+f.amount, 0);
+
+  return (
+    <div className="portal-shell">
+      <Sidebar user={user} activeTab={tab} setTab={setTab} onLogout={onLogout} navItems={navItems} />
+      <div className="main-content">
+        <Topbar title={({dashboard:'Dashboard',courses:'My Courses',fees:'Fee Portal',results:'Academic Results'})[tab]||'Dashboard'} subtitle="Student Portal · College ERP" />
+        <div className="page-content">
+
+          {tab === 'dashboard' && <>
+            <div className="welcome-card">
+              <div className="welcome-text">
+                <h2>👋 Hi, {user.name.split(' ')[0]}!</h2>
+                <p>You're enrolled in {STU_COURSES.length} courses · Semester 5 · B.Tech CSE</p>
+              </div>
+              <div className="welcome-stats">
+                <div className="wstat"><div className="wstat-val">{STU_COURSES.length}</div><div className="wstat-lbl">Courses</div></div>
+                <div className="wstat"><div className="wstat-val">{avgMarks}%</div><div className="wstat-lbl">Avg Marks</div></div>
+                <div className="wstat"><div className="wstat-val">84.6%</div><div className="wstat-lbl">Attendance</div></div>
+              </div>
+            </div>
+
+            <div className="stats-row">
+              <div className="scard blue">
+                <div className="scard-top"><div className="scard-icon">📚</div><span className="scard-trend trend-flat">Sem 5</span></div>
+                <div><div className="scard-value">{STU_COURSES.length}</div><div className="scard-label">Enrolled Courses</div></div>
+              </div>
+              <div className="scard orange">
+                <div className="scard-top"><div className="scard-icon">⭐</div><span className="scard-trend trend-up">+5% ↑</span></div>
+                <div><div className="scard-value">{avgMarks}%</div><div className="scard-label">Average Marks</div></div>
+              </div>
+              <div className="scard green">
+                <div className="scard-top"><div className="scard-icon">📅</div><span className="scard-trend trend-down">-2% ↓</span></div>
+                <div><div className="scard-value">84.6%</div><div className="scard-label">Attendance</div></div>
+              </div>
+              <div className="scard teal">
+                <div className="scard-top"><div className="scard-icon">🏆</div><span className="scard-trend trend-up">Top 15%</span></div>
+                <div><div className="scard-value">{gpa}</div><div className="scard-label">GPA / 10.0</div></div>
+              </div>
+            </div>
+
+            <div className="ccard">
+              <div className="ccard-head">
+                <div className="ccard-head-left">
+                  <div className="ccard-head-icon" style={{background:'#eff6ff'}}>📊</div>
+                  <div>
+                    <div className="ccard-title">Course Performance</div>
+                    <div className="ccard-sub">Current semester marks overview</div>
+                  </div>
+                </div>
+                <button className="btn btn-ghost btn-sm" onClick={() => setTab('courses')}>View All →</button>
+              </div>
+              <div className="ccard-body">
+                {STU_COURSES.map((c,i) => (
+                  <div key={i} className="cp-item">
+                    <div className="cp-info">
+                      <div className="cp-name">{c.name}</div>
+                      <div className="cp-inst">{c.inst}</div>
+                      <div className="pbar-wrap">
+                        <div className={`pbar-fill ${c.marks>=85?'pbar-green':c.marks>=70?'pbar-blue':'pbar-orange'}`} style={{width:`${c.marks}%`}}></div>
+                      </div>
+                    </div>
+                    <div className="cp-right">
+                      <GradeBox grade={c.grade} />
+                      <div className="cp-pct">{c.marks}%</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="section-hd"><h2>⚡ Quick Actions</h2></div>
+            <div className="action-row">
+              {[
+                { icon:'📖', bg:'#eff6ff', title:'Study Materials', desc:'Access notes, slides and video lectures.', lbl:'Browse' },
+                { icon:'📝', bg:'#f5f3ff', title:'Assignments', desc:'View and submit pending assignments.', lbl:'View All' },
+                { icon:'💳', bg:'#ecfdf5', title:'Pay Fees', desc:'Pay semester fees securely online.', lbl:'Pay Now' },
+                { icon:'📅', bg:'#fffbeb', title:'Timetable', desc:'View your weekly class schedule.', lbl:'Open' },
+              ].map((a,i) => (
+                <div key={i} className="acard" onClick={() => setToast(`${a.title} opened!`)}>
+                  <div className="acard-icon" style={{background:a.bg}}>{a.icon}</div>
+                  <h3>{a.title}</h3><p>{a.desc}</p>
+                  <div className="acard-arrow">→ {a.lbl}</div>
+                </div>
+              ))}
+            </div>
+          </>}
+
+          {tab === 'courses' && (
+            <div className="ccard">
+              <div className="ccard-head">
+                <div className="ccard-head-left">
+                  <div className="ccard-head-icon" style={{background:'#eff6ff'}}>📚</div>
+                  <div>
+                    <div className="ccard-title">My Enrolled Courses</div>
+                    <div className="ccard-sub">Semester 5 · B.Tech CSE · {STU_COURSES.reduce((a,c)=>a+c.credits,0)} Total Credits</div>
+                  </div>
+                </div>
+                <span className="pill pill-purple"><span className="pill-dot"></span>Sem 5 Active</span>
+              </div>
+              <div className="ccard-body" style={{padding:0}}>
+                <div className="tw">
+                  <table>
+                    <thead>
+                      <tr><th>Code</th><th>Course Name</th><th>Instructor</th><th>Credits</th><th>Marks</th><th>Grade</th></tr>
+                    </thead>
+                    <tbody>
+                      {STU_COURSES.map(c => (
+                        <tr key={c.id}>
+                          <td><span className="td-code">{c.id}</span></td>
+                          <td><div className="td-name">{c.name}</div></td>
+                          <td>
+                            <div style={{display:'flex',alignItems:'center',gap:8}}>
+                              <div style={{width:28,height:28,borderRadius:'50%',background:'linear-gradient(135deg,#10b981,#059669)',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:11,fontWeight:700,flexShrink:0}}>{initials(c.inst)}</div>
+                              <span style={{fontSize:13,color:'#374151'}}>{c.inst}</span>
+                            </div>
+                          </td>
+                          <td><span className="tag">{c.credits} Cr</span></td>
+                          <td>
+                            <div style={{fontWeight:700,fontSize:15,color:'#0f172a'}}>{c.marks}%</div>
+                            <div className="pbar-wrap" style={{width:70,marginTop:4}}>
+                              <div className={`pbar-fill ${c.marks>=85?'pbar-green':'pbar-blue'}`} style={{width:`${c.marks}%`}}></div>
+                            </div>
+                          </td>
+                          <td><GradeBox grade={c.grade} /></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tab === 'fees' && <>
+            <div className="fee-summary-bar">
+              <div className="fsb-item">
+                <div className="fsb-val" style={{color:'#059669'}}>{fmt(paidFees)}</div>
+                <div className="fsb-lbl">Total Paid</div>
+              </div>
+              <div className="fsb-div"></div>
+              <div className="fsb-item">
+                <div className="fsb-val" style={{color:'#e11d48'}}>{fmt(totalFees-paidFees)}</div>
+                <div className="fsb-lbl">Outstanding</div>
+              </div>
+              <div className="fsb-div"></div>
+              <div className="fsb-item">
+                <div className="fsb-val">{fmt(totalFees)}</div>
+                <div className="fsb-lbl">Total Fees</div>
+              </div>
+              <div style={{marginLeft:'auto'}}>
+                <div className="pbar-wrap" style={{width:180,marginBottom:6}}>
+                  <div className="pbar-fill pbar-green" style={{width:`${Math.round(paidFees/totalFees*100)}%`}}></div>
+                </div>
+                <div style={{fontSize:12,color:'#94a3b8',textAlign:'right'}}>{Math.round(paidFees/totalFees*100)}% paid</div>
+              </div>
+            </div>
+
+            <div className="ccard">
+              <div className="ccard-head">
+                <div className="ccard-head-left">
+                  <div className="ccard-head-icon" style={{background:'#ecfdf5'}}>💳</div>
+                  <div>
+                    <div className="ccard-title">Fee Statement</div>
+                    <div className="ccard-sub">All semesters · Academic History</div>
+                  </div>
+                </div>
+                <button className="btn btn-ghost btn-sm" onClick={() => setToast('Fee receipt downloaded!')}>⬇ Download PDF</button>
+              </div>
+              <div className="ccard-body">
+                {FEES.map((f,i) => (
+                  <div key={i} className="fee-item">
+                    <div>
+                      <div className="fee-sem">{f.sem}</div>
+                      <div className="fee-desc">{f.desc}</div>
+                      <div className="fee-due">Due Date: {f.due}</div>
+                    </div>
+                    <div className="fee-right">
+                      <div className="fee-amount">{fmt(f.amount)}</div>
+                      <StatusPill status={f.status} />
+                      {f.status==='pending' && (
+                        <button className="btn btn-primary btn-sm" onClick={() => setToast('Payment gateway opened!')}>Pay Now →</button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>}
+
+          {tab === 'results' && (
+            <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'50vh',flexDirection:'column',gap:12}}>
+              <div style={{fontSize:48}}>🏆</div>
+              <div style={{fontSize:18,fontWeight:700,color:'#0f172a'}}>Academic Results</div>
+              <div style={{fontSize:14,color:'#94a3b8'}}>Full result history coming soon.</div>
+            </div>
+          )}
+        </div>
+      </div>
+      {toast && <Toast msg={toast} onClose={() => setToast('')} />}
+    </div>
+  );
+}
+
+/* ========== APP ========== */
+function App() {
+  const [user, setUser] = useState(null);
+  if (!user) return <LoginPage onLogin={setUser} />;
+  if (user.role==='admin')   return <AdminPortal   user={user} onLogout={() => setUser(null)} />;
+  if (user.role==='staff')   return <StaffPortal   user={user} onLogout={() => setUser(null)} />;
+  if (user.role==='student') return <StudentPortal user={user} onLogout={() => setUser(null)} />;
+  return <LoginPage onLogin={setUser} />;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

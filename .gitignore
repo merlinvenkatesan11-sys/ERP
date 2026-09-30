@@ -1,0 +1,5 @@
+tools/
+setup_git.ps1
+*.tmp
+.DS_Store
+Thumbs.db
